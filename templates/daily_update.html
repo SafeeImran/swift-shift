@@ -247,6 +247,18 @@
                 placeholder: "-- Choose Profile Statement --",
                 allowClear: true
             });
+
+            // Auto-focus the search input as soon as the dropdown opens
+            // so the user can start typing the driver's name immediately.
+            $('.searchable-select').on('select2:open', function() {
+                // Small timeout lets Select2 finish rendering the search field
+                setTimeout(function() {
+                    var searchField = document.querySelector('.select2-container--open .select2-search__field');
+                    if (searchField) {
+                        searchField.focus();
+                    }
+                }, 0);
+            });
         });
     </script>
 </div>
