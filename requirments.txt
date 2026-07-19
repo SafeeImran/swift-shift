@@ -1,0 +1,12 @@
+# Web Framework & Core Engine
+Flask==3.0.3
+Werkzeug==3.0.3
+Jinja2==3.1.4
+
+# WSGI Production Server (Highly Recommended for Deployment)
+gunicorn==22.0.0
+
+# System Utilities & Security Handling
+itsdangerous==2.2.0
+click==8.1.7
+blinker==1.8.2
