@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Swift Shift Transport — Driver Intelligence System</title>
+    <style>
+        :root {
+            --bg: #090d16; 
+            --card: #131a26; 
+            --accent: #2563eb; 
+            --accent-glow: rgba(37, 99, 235, 0.4);
+            --success: #10b981; 
+            --success-glow: rgba(16, 185, 129, 0.2);
+            --danger: #f43f5e; 
+            --text: #f8fafc; 
+            --text-muted: #94a3b8; 
+            --border: #1e293b;
+        }
+
+        body { 
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif; 
+            background: radial-gradient(circle at top, #1e2640 0%, var(--bg) 70%); 
+            color: var(--text); 
+            margin: 0; 
+            padding: 15px; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        /* Global Header Brand Bar */
+        .brand-header {
+            width: 100%;
+            max-width: 480px;
+            text-align: center;
+            padding: 15px 0 5px 0;
+        }
+        .brand-header h1 {
+            margin: 0;
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            background: linear-gradient(to right, #38bdf8, #2563eb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+        }
+        .brand-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 4px;
+        }
+
+        .app-container { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 16px; margin-top: 10px; }
+        
+        /* Premium Card styling with subtle shadows and borders */
+        .card { 
+            background: var(--card); 
+            border: 1px solid var(--border); 
+            border-radius: 16px; 
+            padding: 24px; 
+            box-sizing: border-box; 
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+        
+        h2 { 
+            margin: 0 0 16px 0; 
+            font-size: 1.2rem; 
+            color: #38bdf8; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .urdu { display: block; font-size: 1.05rem; color: var(--text-muted); font-weight: 500; direction: rtl; font-family: system-ui, sans-serif; }
+        
+        /* Grid Layout Matrix Elements */
+        .metric-row { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            padding: 12px 0; 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04); 
+            font-size: 0.95rem; 
+        }
+        .metric-row:last-of-type { border: none; }
+        .label { color: var(--text-muted); display: flex; flex-direction: column; }
+        .label .u-lbl { font-size: 0.8rem; color: #64748b; direction: rtl; text-align: left; }
+        .val { font-weight: 600; text-align: right; color: var(--text); }
+        
+        /* Interactive Input Fields */
+        .form-element { background: rgba(0,0,0,0.2); padding: 14px; border-radius: 12px; margin-bottom: 14px; border: 1px solid var(--border); }
+        .form-element label { font-size: 0.9rem; font-weight: 500; color: #e2e8f0; }
+        
+        select, input, textarea { 
+            width: 100%; 
+            padding: 12px 16px; 
+            margin-top: 8px; 
+            box-sizing: border-box; 
+            background: #0f141c; 
+            border: 1px solid var(--border); 
+            color: white; 
+            border-radius: 10px; 
+            font-size: 1rem; 
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        select:focus, input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        
+        input[type="checkbox"] { 
+            width: 22px; 
+            height: 22px; 
+            margin: 0; 
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+        
+        /* Custom Modernized Action Buttons */
+        button { 
+            background: linear-gradient(135deg, #2563eb, #1d4ed8); 
+            color: white; 
+            font-weight: bold; 
+            border: none; 
+            padding: 16px; 
+            width: 100%; 
+            font-size: 1.05rem; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+            transition: all 0.2s ease;
+        }
+        button:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3); }
+        button:active { transform: translateY(1px); }
+        
+        .audio-btn { 
+            background: rgba(56, 189, 248, 0.08); 
+            border: 1px solid rgba(56, 189, 248, 0.2); 
+            color: #38bdf8; 
+            width: auto; 
+            padding: 8px 18px; 
+            font-size: 0.9rem; 
+            border-radius: 30px; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 8px; 
+            margin: 12px auto 0 auto; 
+            box-shadow: none;
+        }
+        .audio-btn:hover { background: rgba(56, 189, 248, 0.15); }
+        
+        .alert { 
+            background: rgba(30, 58, 138, 0.4); 
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: #38bdf8;
+            padding: 14px; 
+            border-radius: 10px; 
+            text-align: center; 
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        /* ⏳ FULL SCREEN DYNAMIC LOADING SCREEN OVERLAY */
+        #loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 8, 15, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 9999;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        #loading-overlay.active { opacity: 1; pointer-events: auto; }
+        .spinner {
+            width: 50px; height: 50px;
+            border: 4px solid rgba(37, 99, 235, 0.1);
+            border-left-color: #38bdf8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        .loading-text { margin-top: 16px; font-size: 1rem; color: #38bdf8; font-weight: 600; letter-spacing: 0.5px; }
+        @keyframes spin { to { transform: rotate(300deg); } }
+    </style>
+</head>
+<body>
+
+<div id="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text">Processing Request / معلومات بھیجی جا رہی ہے...</div>
+</div>
+
+<div class="brand-header">
+    <h1>Swift Shift Transport</h1>
+    <div class="brand-sub">Driver Intelligence Node</div>
+</div>
+
+<div class="app-container">
+
+    {% if not logged_in %}
+        <div class="card" style="margin-top: 20px;">
+            <h2>Vehicle Login Portal <span class="urdu">گاڑی پورٹل لاگ ان</span></h2>
+            <div style="text-align:center;"><button type="button" class="audio-btn" onclick="speakUrdu('login')">🔊 سنیں (Listen)</button></div>
+            <br>
+            
+            {% with messages = get_flashed_messages() %}
+                {% if messages %} <div class="alert">{{ messages[0] }}</div> {% endif %}
+            {% endwith %}
+            
+            <form method="POST" onsubmit="showLoading()">
+                <div class="form-element">
+                    <label>Registration Number / گاڑی کا نمبر:</label>
+                    <input type="text" name="registration_no" placeholder="e.g., CZ-6153" required autocomplete="off">
+                </div>
+                <div class="form-element">
+                    <label>Password / پاس ورڈ:</label>
+                    <input type="password" name="password" required>
+                </div>
+                <button type="submit">Log In / لاگ ان کریں</button>
+            </form>
+        </div>
+
+    {% else %}
+        <div class="card">
+            <h2>Driver Identity <span class="urdu">ڈرائیور کی معلومات</span></h2>
+            <div class="metric-row">
+                <span class="label">Captain Name <span class="u-lbl">کپتان کا نام</span></span>
+                <span class="val">{{ data.captain_name }}</span>
+            </div>
+            <div class="metric-row">
+                <span class="label">Driver System Code <span class="u-lbl">ڈرائیور کوڈ</span></span>
+                <span class="val" style="color:#38bdf8;">{{ data.driver_code }}</span>
+            </div>
+            <div class="metric-row">
+                <span class="label">Route Assigned <span class="u-lbl">تعینات روٹ</span></span>
+                <span class="val">{{ data.route_name }}</span>
+            </div>
+            <div class="metric-row">
+                <span class="label">Corporate Division <span class="u-lbl">کمپنی شراکت</span></span>
+                <span class="val">{{ data.company_name }}</span>
+            </div>
+            <div class="metric-row">
+                <span class="label">Vehicle Reg No <span class="u-lbl">گاڑی کا نمبر</span></span>
+                <span class="val" style="background: rgba(255,255,255,0.06); padding: 2px 8px; border-radius: 4px;">{{ data.registration_no }}</span>
+            </div>
+            <div class="metric-row">
+                <span class="label">Car Model <span class="u-lbl">گاڑی کا ماڈل</span></span>
+                <span class="val">{{ data.car_model }}</span>
+            </div>
+            <div class="metric-row">
+                <span class="label">Climate Controls <span class="u-lbl">اے سی اسٹیٹس</span></span>
+                <span class="val">{{ data.ac_status }}</span>
+            </div>
+        </div>
+
+        <div class="card" style="border-color: rgba(16, 185, 129, 0.3); background: linear-gradient(180deg, #131a26 0%, #0d221c 100%);">
+            <h2 style="color: var(--success);">Statement Ledger <span class="urdu">مالیاتی تفصیلات</span></h2>
+            
+            <div class="metric-row">
+                <span class="label">Track Distance <span class="u-lbl">روٹ کلومیٹر</span></span>
+                <span class="val">{{ data.kms }} KM</span>
+            </div>
+            <div class="metric-row">
+                <span class="label">Fuel Efficiency Target <span class="u-lbl">طے شدہ ایوریج</span></span>
+                <span class="val">{{ data.fuel_cons_per_km }} Ltr/KM</span>
+            </div>
+            <div class="metric-row">
+                <span class="label">Active Work Days <span class="u-lbl">کام کے کل دن</span></span>
+                <span class="val">{{ data.working_days }} Days</span>
+            </div>
+            <div class="metric-row">
+                <span class="label">Monthly Target Fuel Allowance <span class="u-lbl">ماہانہ فیول کوٹہ</span></span>
+                <span class="val" style="color: #38bdf8;">{{ data.monthly_litre }} Ltr</span>
+            </div>
+            <div class="metric-row" style="background: rgba(244, 63, 94, 0.04); margin: 2px 0; padding: 12px 6px; border-radius: 6px;">
+                <span class="label" style="color: var(--danger);">Absence Deductions (Backup) <span class="u-lbl" style="color:#b91c1c;">بیک اپ کٹوتی فائن</span></span>
+                <span class="val" style="color: var(--danger); font-weight: bold;">- Rs. {{ data.backup }}</span>
+            </div>
+            <div class="metric-row">
+                <span class="label">Actual Fuel Consumed <span class="u-lbl">حاصل کردہ کل فیول</span></span>
+                <span class="val">{{ data.actual_fuel_taken }} Ltr</span>
+            </div>
+            <div class="metric-row">
+                <span class="label">Fuel Variance Margin <span class="u-lbl">فیول کا فرق (بقایا)</span></span>
+                <span class="val {% if data.fuel_diff < 0 %}text-danger{% else %}color: var(--success){% endif %}">{{ data.fuel_diff }} Ltr</span>
+            </div>
+            
+            <div style="text-align:center;">
+                <button type="button" class="audio-btn" onclick="speakUrdu('statement', '{{ data.captain_name }}', '{{ data.backup }}', '{{ data.actual_fuel_taken }}')">🔊 تفصیلات سنیں (Audio Report)</button>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %} <div class="alert" style="background: rgba(16, 185, 129, 0.15); border-color: var(--success); color: #34d399;">{{ messages[0] }}</div> {% endif %}
+        {% endwith %}
+
+        <form action="/confirm" method="POST" onsubmit="showLoading()">
+            
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label style="font-weight:600; font-size:1rem;">Cash Advance Request <span class="urdu" style="margin: 2px 0 0 0;">ایڈوانس رقم کی درخواست</span></label>
+                    <input type="checkbox" id="advance_check" name="advance_check" onchange="document.getElementById('adv_drop').style.display = this.checked ? 'block':'none'" {% if data.advance_amount > 0 %}checked disabled{% endif %}>
+                </div>
+                <div id="adv_drop" style="display:{% if data.advance_amount > 0 %}block{% else %}none{% endif %}; margin-top:12px;">
+                    <select name="advance_select" {% if data.advance_amount > 0 %}disabled{% endif %}>
+                        <option value="1000" {% if data.advance_amount == 1000 %}selected{% endif %}>Rs. 1000</option>
+                        <option value="2000" {% if data.advance_amount == 2000 %}selected{% endif %}>Rs. 2000</option>
+                        <option value="3000" {% if data.advance_amount == 3000 %}selected{% endif %}>Rs. 3000</option>
+                        <option value="4000" {% if data.advance_amount == 4000 %}selected{% endif %}>Rs. 4000</option>
+                        <option value="5000" {% if data.advance_amount == 5000 %}selected{% endif %}>Rs. 5000</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label style="font-weight:600; font-size:1rem;">Day Off / Emergency Log <span class="urdu" style="margin: 2px 0 0 0;">چھٹی / بریک ڈاؤن رپورٹ</span></label>
+                    <input type="checkbox" id="dayoff_check" name="dayoff_check" onchange="document.getElementById('off_div').style.display = this.checked ? 'block':'none'" {% if data.day_off_reason %}checked disabled{% endif %}>
+                </div>
+                <div id="off_div" style="display:{% if data.day_off_reason %}block{% else %}none{% endif %}; margin-top:12px;">
+                    <select id="reason_sel" name="day_off_reason_select" onchange="toggleCustomReason(this)" {% if data.day_off_reason %}disabled{% endif %}>
+                        <option value="Medical condition / طبعیت خراب ہے" {% if data.day_off_reason and "Medical" in data.day_off_reason %}selected{% endif %}>Medical condition / طبعیت خراب ہے</option>
+                        <option value="Car breakdown / گاڑی خراب ہے" {% if data.day_off_reason and "Car" in data.day_off_reason %}selected{% endif %}>Car breakdown / گاڑی خراب ہے</option>
+                        <option value="Others" {% if data.day_off_reason and "Medical" not in data.day_off_reason and "Car" not in data.day_off_reason %}selected{% endif %}>Others / دیگر وجہ</option>
+                    </select>
+                    <div id="custom_box" style="display:none; margin-top:12px;">
+                        <input type="text" name="day_off_reason_custom" placeholder="Type customized log / وجہ تفصیل سے لکھیں..." value="{{ data.day_off_reason if data.day_off_reason else '' }}" {% if data.day_off_reason %}disabled{% endif %}>
+                    </div>
+                </div>
+            </div>
+
+            {% if data.advance_amount == 0 or not data.day_off_reason %}
+                <button type="submit" style="margin-top: 4px;">Confirm & Save Changes / تصدیق کریں</button>
+            {% endif %}
+        </form>
+
+        <a href="/logout" style="text-decoration: none;" onclick="showLoading()"><button type="button" style="background:#1e293b; color:var(--danger); border: 1px solid rgba(244,63,94,0.1); margin-top:10px;">Log Out System / لاگ آؤٹ</button></a>
+    {% endif %}
+
+</div>
+
+<script>
+    // Handles dynamic screen overlays
+    function showLoading() {
+        document.getElementById('loading-overlay').classList.add('active');
+    }
+
+    function toggleCustomReason(select) {
+        document.getElementById('custom_box').style.display = (select.value === 'Others') ? 'block' : 'none';
+    }
+    
+    // Core Urdu Speech Engine TTS Wrapper logic Fix
+    function speakUrdu(action, p1, p2, p3) {
+        if (!('speechSynthesis' in window)) return;
+        window.speechSynthesis.cancel();
+        let phrase = "";
+        
+        if (action === 'login') {
+            phrase = "گاڑی پورٹل لاگ ان میں خوش آمدید۔ اپنا رجسٹریشن نمبر اور پاس ورڈ درج کریں۔";
+        }
+        else if (action === 'statement') {
+            // p1 = Captain Name, p2 = Backup Amount, p3 = Actual Fuel Taken
+            phrase = `محترم کپتان ${p1}۔ آپ کا بیک اپ کٹوتی ${p2} روپے ہے، اور حاصل کردہ ایندھن ${p3} لیٹر ہے۔ مہربانی فرما کر اپنے تمام ریکارڈ کی تصدیق کریں۔`;
+        }
+        
+        let u = new SpeechSynthesisUtterance(phrase);
+        u.lang = 'ur-PK'; 
+        u.rate = 0.82; // Slightly adjusted down for clearer pronunciation parsing
+        window.speechSynthesis.speak(u);
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        let s = document.getElementById('reason_sel');
+        if(s) toggleCustomReason(s);
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Advanced Fleet Intelligence Suite</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #0b0f19; color: #f3f4f6; margin: 0; padding: 20px; }
+        .dashboard-container { max-width: 1650px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+        .header-panel { background: #111827; padding: 20px; border-radius: 12px; border: 1px solid #1f2937; display: flex; justify-content: space-between; align-items: center; }
+        h1 { margin: 0; color: #a855f7; font-size: 1.6rem; }
+        
+        .search-filter-card { background: #1f2937; padding: 20px; border-radius: 12px; border: 1px solid #374151; }
+        .filter-form { display: grid; grid-template-columns: 1fr 1fr 1.5fr auto auto; gap: 12px; align-items: flex-end; }
+        label { font-size: 0.85rem; color: #9ca3af; font-weight: 600; display: block; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 11px; background: #111827; border: 1px solid #374151; color: white; border-radius: 8px; font-size: 0.95rem; box-sizing: border-box; }
+        
+        .action-btn { background: #a855f7; color: white; border: none; padding: 11px 20px; font-weight: bold; border-radius: 8px; cursor: pointer; height: 43px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; font-size: 0.95rem; white-space: nowrap; }
+        .action-btn:hover { background: #9333ea; }
+        .csv-btn { background: #10b981; }
+        .csv-btn:hover { background: #059669; }
+        
+        .table-viewport { background: #111827; border-radius: 12px; border: 1px solid #1f2937; overflow-x: auto; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left; min-width: 1550px; }
+        th { background: #1f2937; color: #9ca3af; padding: 14px; font-weight: bold; border-bottom: 2px solid #374151; white-space: nowrap; }
+        td { padding: 14px; border-bottom: 1px solid #1f2937; white-space: nowrap; }
+        tr:hover { background: #1e293b; }
+        
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
+        .company-badge { background: #2563eb; color: white; }
+        .code-badge { background: #7c3aed; color: white; font-family: monospace; transition: transform 0.1s; }
+        .code-badge:hover { transform: scale(1.05); background: #6d28d9; }
+        .highlight-payable { background: rgba(16, 185, 129, 0.15); color: #10b981; font-weight: bold; border: 1px solid #10b981; }
+        .text-danger { color: #ef4444; font-weight: bold; }
+        .text-success { color: #10b981; font-weight: bold; }
+        
+        .redirect-link { color: #38bdf8; font-weight: bold; text-decoration: none; transition: color 0.1s; }
+        .redirect-link:hover { color: #60a5fa; text-decoration: underline; }
+
+        .disabled-row { opacity: 0.6; background: rgba(75, 85, 99, 0.18); }
+        .disabled-row:hover { background: rgba(75, 85, 99, 0.28); }
+        .badge-disabled { background: #ef4444; color: white; }
+        .toggle-btn { background: #f59e0b; color: black; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.75rem; }
+        .toggle-btn:hover { background: #d97706; }
+        .toggle-btn.enable { background: #10b981; color: white; }
+        .toggle-btn.enable:hover { background: #059669; }
+        .pwd-prompt { background: #0f172a; border: 1px solid #ef4444; padding: 14px; border-radius: 8px; }
+        .pwd-prompt input { background: #1e293b; border: 1px solid #374151; color: white; padding: 8px; width: 100%; box-sizing: border-box; border-radius: 4px; margin-top: 8px; }
+        .pwd-prompt button { margin-top: 10px; padding: 8px 14px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .pwd-prompt .go { background: #ef4444; color: white; }
+        .pwd-prompt .cancel { background: #475569; color: white; margin-left: 6px; }
+        .filter-form { 
+        display: grid; 
+        grid-template-columns: 1fr 1fr 1fr 1.5fr auto auto; /* 🆕 Added one more 1fr track spacing column */
+        gap: 12px; 
+        align-items: flex-end; 
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+
+    <div class="header-panel">
+        <div>
+            <h1>📊 Fleet Intelligence & Statement Suite</h1>
+            <p style="margin: 5px 0 0 0; color: #9ca3af; font-size: 0.9rem;">Cross-database analysis, intelligent tracking filters, and live redirect profiles.</p>
+        </div>
+        <a href="/admin" style="background: #374151; color: white; text-decoration: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 0.9rem;">← Master Command Hub</a>
+    </div>
+
+    <div class="search-filter-card">
+        <form method="GET" action="/admin/analytics" class="filter-form">
+            <div>
+                <label>Target Database Partition:</label>
+                <select name="company">
+                    <option value="">-- All Corporate Databases --</option>
+                    {% for c in companies %}
+                        <option value="{{ c }}" {% if select_comp == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div>
+                <label>Filter Operation Route Name:</label>
+                <input type="text" name="route" value="{{ select_route }}" placeholder="e.g., Gulshan">
+            </div>
+
+            <div>
+                <label>Smart Filter Search Query:</label>
+                <input type="text" name="search_query" value="{{ query }}" placeholder="Search Driver, Reg, Code...">
+            </div>
+
+            <div>
+                <button type="submit" class="action-btn">Filter Data</button>
+            </div>
+            <div>
+            <label>Attendance / Day Off State:</label>
+            <select name="attendance_state">
+                <option value="">-- All Active & Day Off States --</option>
+                <option value="active" {% if select_attendance == 'Active' %}selected{% endif %}>● Active Duty</option>
+                <option value="day_off" {% if select_attendance == 'Day Off' %}selected{% endif %}>🚨 Day Off</option>
+            </select>
+            </div>
+            <div>
+                <a href="/admin/download_csv?company={{ select_comp }}&route={{ select_route }}&search_query={{ query }}&attendance_state={{attendance_state}}" class="action-btn csv-btn">📥 Download CSV</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-viewport">
+        <table>
+            <thead>
+                <tr>
+                    <th>Auto Code</th>
+                    <th>Reg No</th>
+                    <th>Company DB</th>
+                    <th>Captain Details</th>
+                    <th>Contacts</th>
+                    <th>Model / AC</th>
+                    <th>Assigned Route</th>
+                    <th>Rental (Rs)</th>
+                    <th>KMs</th>
+                    <th>Working Days</th>
+                    <th>Trip Target (Ltr)</th>
+                    <th>Monthly Target (Ltr)</th>
+                    <th>Monthly Fuel Value</th>
+                    <th>Route Cost</th>
+                    <th>Actual Taken (Ltr)</th>
+                    <th>Variance (Ltr)</th>
+                    <th>Backup Fine (Rs)</th>
+                    <th>Variance Fine (Rs)</th>
+                    <th>Advance (Rs)</th>
+                    <th>Attendance State</th>
+                    <th>Balance to be paid</th>
+                    <th style="text-align:center; background:#1e293b;">Management Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in ledger %}
+                <tr class="{% if row.is_disabled %}disabled-row{% endif %}">
+                    <td>
+                        <a href="/admin/user_profile/{{ row.company_name }}/{{ row.registration_no }}" style="text-decoration: none;">
+                            <span class="badge code-badge" title="Click to view full transaction logs profile">🔗 {{ row.driver_code }}</span>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="/admin/user_profile/{{ row.company_name }}/{{ row.registration_no }}" class="redirect-link" title="Click to view full transaction logs profile">
+                            <strong>{{ row.registration_no }}</strong>
+                        </a>
+                    </td>
+                    
+                    <td><span class="badge company-badge">{{ row.company_name }}</span></td>
+                    <td>{{ row.captain_name }}</td>
+                    <td style="font-size: 0.8rem; color: #9ca3af;">{{ row.contact1 }}<br>{{ row.contact2 }}</td>
+                    <td>{{ row.car_model }} <br> <span style="font-size:0.75rem; color:#9ca3af;">AC: {{ row.ac_status }}</span></td>
+                    <td><span style="color:#38bdf8;">{{ row.route_name }}</span></td>
+                    <td>Rs. {{ row.rental }}</td>
+                    <td>{{ row.kms }} KM</td>
+                    <td>{{ row.working_days }} Days</td>
+                    <td>{{ row.fuelinlitre }} Ltr</td>
+                    <td>{{ row.monthly_litre }} Ltr</td>
+                    <td>Rs. {{ row.monthly_fuel_amount }}</td>
+                    <td>Rs. {{row.route_cost}}
+                    <td>{{ row.actual_fuel }} Ltr</td>
+                    <td class="{% if row.fuel_diff < 0 %}text-danger{% else %}text-success{% endif %}">{{ row.fuel_diff }} Ltr</td>
+                    <td class="{% if row.backup > 0 %}text-danger{% endif %}">Rs. {{ row.backup }}</td>
+                    <td>Rs. {{ row.fuel_diff_amount }}</td>
+                    <td style="color: #eab308;">Rs. {{ row.advance }}</td>
+                    <td>
+                        {% if row.is_disabled %}
+                            <span class="badge badge-disabled">🔒 DISABLED</span>
+                        {% elif row.day_off_reason == 'Active' %}
+                            <span style="color:#10b981;">● Active Duty</span>
+                        {% else %}
+                            <span style="color:#ef4444; font-size:0.8rem;">🚨 {{ row.day_off_reason }}</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="badge highlight-payable">Rs. {{ row.captain_payment }}</span></td>
+                    <td style="text-align:center;">
+                        {% if row.is_disabled %}
+                            <form method="POST" class="car-status-form" style="display:inline;" data-action="enable" data-reg="{{ row.registration_no }}" data-name="{{ row.captain_name }}">
+                                <input type="hidden" name="action" value="enable_car">
+                                <input type="hidden" name="registration_no" value="{{ row.registration_no }}">
+                                <input type="hidden" name="company_name" value="{{ row.company_name }}">
+                                <button type="button" class="toggle-btn enable" onclick="initiateStatusChange(this)">🔓 Enable</button>
+                            </form>
+                        {% else %}
+                            <form method="POST" class="car-status-form" style="display:inline;" data-action="disable" data-reg="{{ row.registration_no }}" data-name="{{ row.captain_name }}">
+                                <input type="hidden" name="action" value="disable_car">
+                                <input type="hidden" name="registration_no" value="{{ row.registration_no }}">
+                                <input type="hidden" name="company_name" value="{{ row.company_name }}">
+                                <button type="button" class="toggle-btn" onclick="initiateStatusChange(this)">🔒 Disable</button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="21" style="text-align: center; padding: 30px; color: #9ca3af; font-size: 1.1rem;">No matching profiles found in storage.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+function initiateStatusChange(buttonEl) {
+    const form = buttonEl.closest('form');
+    const action = form.getAttribute('data-action');
+    const reg = form.getAttribute('data-reg');
+    const name = form.getAttribute('data-name');
+    const verb = action === 'disable' ? 'DISABLE' : 'RE-ENABLE';
+
+    const firstConfirmation = confirm(
+        `${verb} Captain ${name} [${reg}]?\n\n` +
+        (action === 'disable'
+            ? 'They will be locked out of the system. All historical logs will be preserved.'
+            : 'They will be able to log in and accept daily updates again.')
+    );
+    if (!firstConfirmation) return;
+
+    const existing = document.getElementById('status-pwd-prompt');
+    if (existing) existing.remove();
+
+    const promptBox = document.createElement('div');
+    promptBox.id = 'status-pwd-prompt';
+    promptBox.className = 'pwd-prompt';
+    promptBox.style.position = 'fixed';
+    promptBox.style.top = '50%';
+    promptBox.style.left = '50%';
+    promptBox.style.transform = 'translate(-50%, -50%)';
+    promptBox.style.zIndex = '9999';
+    promptBox.style.minWidth = '340px';
+    promptBox.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+    promptBox.innerHTML = `
+        <div style="color:#fca5a5; font-weight:bold;">🔒 CRITICAL INFRASTRUCTURE PROTECTION</div>
+        <div style="font-size:0.85rem; color:#9ca3af; margin-top:6px;">Enter the Master Management Passphrase to <strong>${verb}</strong> vehicle <strong style="color:#38bdf8;">[${reg}]</strong>:</div>
+        <input type="password" id="status_pwd" placeholder="Management passphrase" autocomplete="off">
+        <div>
+            <button type="button" class="go" id="status_go">Authorize ${verb}</button>
+            <button type="button" class="cancel" id="status_cancel">Cancel</button>
+        </div>
+    `;
+    document.body.appendChild(promptBox);
+    document.getElementById('status_pwd').focus();
+
+    document.getElementById('status_cancel').onclick = () => promptBox.remove();
+    document.getElementById('status_go').onclick = () => {
+        const pwd = document.getElementById('status_pwd').value;
+        if (!pwd) { alert('Passphrase cannot be empty.'); return; }
+        const hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = 'verify_password';
+        hidden.value = pwd;
+        form.appendChild(hidden);
+        promptBox.remove();
+        form.submit();
+    };
+    document.getElementById('status_pwd').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') document.getElementById('status_go').click();
+        if (e.key === 'Escape') promptBox.remove();
+    });
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fleet & Route Control Workspace</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #0f172a; color: white; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .workspace-card { background: #1e293b; padding: 24px; border-radius: 12px; width: 100%; max-width: 550px; border: 1px solid #334155; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+        h2 { color: #10b981; margin-top: 0; text-align: center; }
+        label { display: block; margin-top: 12px; font-weight: bold; font-size: 0.85rem; color: #94a3b8; }
+        input, select { width: 100%; padding: 10px; margin-top: 4px; box-sizing: border-box; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px; }
+        button { background: #10b981; color: white; font-weight: bold; border: none; padding: 12px; width: 100%; border-radius: 6px; margin-top: 15px; cursor: pointer; transition: 0.2s; }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        .search-btn { background: #2563eb; }
+        .back-link { color: #94a3b8; text-decoration: none; font-size: 0.9rem; margin-top: 10px; }
+        .flash-msg { padding: 10px; border-radius: 6px; margin-bottom: 12px; text-align: center; font-weight: 600; }
+        .flash-success { background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; }
+        .flash-error { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; }
+        .flash-warn { background: rgba(234, 179, 8, 0.15); border: 1px solid #eab308; color: #fde047; }
+    </style>
+    <script>
+        function confirmUpdate(event, message) {
+            if (!confirm(message)) {
+                event.preventDefault();
+                return false;
+            }
+            return true;
+        }
+    </script>
+</head>
+<body>
+
+    <div class="workspace-card">
+        <h2>🔍 Search System Repository</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, msg in messages %}
+                    <div class="flash-msg {% if category == 'error' %}flash-error{% elif category == 'warning' %}flash-warn{% else %}flash-success{% endif %}">{{ msg }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form method="POST">
+            <input type="hidden" name="action" value="search">
+            <label>Type Vehicle Registration Number OR Route Unique Name:</label>
+            <input type="text" name="search_target" placeholder="e.g., CZ-6153 or KHI-HYD-01" required>
+            <button type="submit" class="search-btn">Locate Component Profile</button>
+        </form>
+
+        <p style="text-align:center; margin-top:18px; font-size:0.9rem;">
+            <a href="/admin/edit_routes" style="color:#38bdf8; text-decoration:none; font-weight:bold;">🗺️ Edit a route? Open the dedicated Route Calibration Workspace →</a>
+        </p>
+    </div>
+
+    {% if car %}
+    <div class="workspace-card" style="border-color: #10b981;">
+        <h2>📝 Adjust Variables for Vehicle: {{ car[0] }}</h2>
+        <p style="text-align:center; color:#94a3b8; font-size:0.85rem; margin:0;">Database Context: {{ comp_context }}</p>
+
+        <form method="POST" onsubmit="return confirmUpdate(event, 'Are you certain you want to write these financial modifications to the live profile database?');">
+            <input type="hidden" name="action" value="update_vehicle">
+            <input type="hidden" name="target_reg_no" value="{{ car[0] }}">
+            <input type="hidden" name="comp_context" value="{{ comp_context }}">
+
+            <label>Actual Fuel Taken by Captain (Litres):</label>
+            <input type="number" step="0.01" name="actual_fuel_taken" value="{{ car[1] }}">
+
+            <label>Advance Amount (Rs.):</label>
+            <input type="number" name="advance_amount" value="{{ car[2] }}">
+
+            <label>Primary Contact (Contact 1):</label>
+            <input type="text" name="contact1" value="{{ car[3] }}" required>
+
+            <label>Secondary Contact (Contact 2):</label>
+            <input type="text" name="contact2" value="{{ car[4] if car[4] else '' }}">
+
+            <label>Override Route Rental Amount (Leave empty for default):</label>
+            <input type="number" step="0.01" name="custom_rental" value="{{ car[5] if car[5] is not none else '' }}" placeholder="Inherited value default fallback">
+
+            <label>Assigned Operational Route Cluster:</label>
+            <select name="route_name">
+                {% for r in routes %}
+                    <option value="{{ r }}" {% if car[6] == r %}selected{% endif %}">{{ r }}</option>
+                {% endfor %}
+            </select>
+
+            <label>Override Route Distance (Kilometers):</label>
+            <input type="number" step="0.01" name="custom_kms" value="{{ car[7] if car[7] is not none else '' }}" placeholder="Inherited value default fallback">
+
+            <label>Override Total Working Days Context:</label>
+            <input type="number" step = "0" name="custom_working_days" value="{{ car[8] if car[8] is not none else '' }}" placeholder="Inherited value default fallback">
+
+            <label>🔒 Management Passphrase (required to commit changes):</label>
+            <input type="password" name="verify_password" placeholder="Enter destructive-action password" required>
+
+            <button type="submit">Commit Metric Changes</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <a href="/admin" class="back-link">← Return to Admin Hub</a>
+</body>
+</html>

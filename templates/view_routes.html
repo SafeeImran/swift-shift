@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Master Route Repository Ledger</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #0f172a; color: white; padding: 30px; }
+        .viewport-box { max-width: 1200px; margin: 0 auto; background: #1e293b; padding: 24px; border-radius: 12px; border: 1px solid #334155; }
+        h1 { color: #38bdf8; margin-top: 0; font-size: 1.5rem; border-bottom: 2px solid #334155; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.92rem; }
+        th, td { padding: 11px; text-align: left; border-bottom: 1px solid #334155; }
+        th { background: #0f172a; color: #94a3b8; }
+        tr:hover { background: rgba(255,255,255,0.02); }
+        .comp-tag { background: #2563eb; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+        .back-btn { display: inline-block; background: #475569; color: white; text-decoration: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 15px; }
+        .del-btn { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.8rem; }
+        .del-btn:hover { background: #dc2626; }
+        .muted { color: #64748b; font-style: italic; }
+        .ghost-badge { background: #7c3aed; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; margin-left: 6px; }
+        .car-count { display: inline-block; background: #334155; color: #cbd5e1; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; margin-left: 6px; }
+        .msg-success { background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; padding: 10px; border-radius: 6px; margin-bottom: 15px; text-align: center; font-weight: 600; }
+        .msg-error { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 10px; border-radius: 6px; margin-bottom: 15px; text-align: center; font-weight: 600; }
+        .pwd-prompt { background: #0f172a; border: 1px solid #ef4444; padding: 12px; border-radius: 6px; }
+        .pwd-prompt input { background: #1e293b; border: 1px solid #334155; color: white; padding: 8px; width: 100%; box-sizing: border-box; border-radius: 4px; margin-top: 6px; }
+        .pwd-prompt button { margin-top: 8px; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .pwd-prompt .go { background: #ef4444; color: white; }
+        .pwd-prompt .cancel { background: #475569; color: white; margin-left: 6px; }
+    </style>
+</head>
+<body>
+    <div class="viewport-box">
+        <a href="/admin" class="back-btn">← Return to Control Center</a>
+        <h1>🗺️ Master Route Specifications Index</h1>
+        <p style="color:#94a3b8; font-size:0.85rem; margin: 6px 0 0 0;">
+            Showing every route that appears in the fleet — both registered <strong style="color:#38bdf8;">routes</strong> table entries and
+            <em>referenced</em> route names found on cars that have no formal route profile yet.
+        </p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, msg in messages %}
+                    <div style="margin-top:15px;" class="{% if category == 'error' %}msg-error{% else %}msg-success{% endif %}">{{ msg }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Route Profile Name</th>
+                    <th>Associated Corporate Context</th>
+                    <th>Distance</th>
+                    <th>Consumption Target</th>
+                    <th>Base Working Days</th>
+                    <th>Base Route Rental</th>
+                    <th style="text-align: center;">Cars</th>
+                    <th style="text-align: center;">Management Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in routes %}
+                <tr>
+                    <td>
+                        <strong style="color:#38bdf8;">{{ r.route_name }}</strong>
+                        {% if not r.in_routes_table %}
+                            <span class="ghost-badge" title="Not in the routes table — only referenced by cars">UNREGISTERED</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="comp-tag">{{ r.company_name }}</span></td>
+                    <td>{% if r.kms is not none %}{{ r.kms }} KM{% else %}<span class="muted">—</span>{% endif %}</td>
+                    <td>{% if r.fuel_cons_per_km is not none %}{{ r.fuel_cons_per_km }} Ltr/KM{% else %}<span class="muted">—</span>{% endif %}</td>
+                    <td>{% if r.working_days is not none %}{{ r.working_days }} Days{% else %}<span class="muted">—</span>{% endif %}</td>
+                    <td>{% if r.route_rental is not none %}<span style="color:#10b981; font-weight:bold;">Rs. {{ r.route_rental }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>
+                    <td style="text-align: center;">
+                        <span class="car-count">{{ r.car_count }}</span>
+                    </td>
+                    <td style="text-align: center;">
+                        <form method="POST" class="route-delete-form" data-route="{{ r.route_name }}" data-company="{{ r.company_name }}">
+                            <input type="hidden" name="action" value="delete_route">
+                            <input type="hidden" name="route_name" value="{{ r.route_name }}">
+                            <input type="hidden" name="company_name" value="{{ r.company_name }}">
+                            <button type="button" class="del-btn" onclick="initiateDelete(this)">🗑️ Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" style="text-align:center; color:#94a3b8; padding:20px;">No registered infrastructure mapping paths found in system storage arrays.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+    function initiateDelete(buttonEl) {
+        const form = buttonEl.closest('form');
+        const routeName = form.getAttribute('data-route');
+        const companyName = form.getAttribute('data-company');
+
+        const firstConfirmation = confirm(
+            `⚠️ Are you completely sure you want to permanently delete the route [${routeName}] from [${companyName}]?\n\n` +
+            `All drivers assigned to this route will become unassigned.`
+        );
+        if (!firstConfirmation) return;
+
+        const existing = document.getElementById('inline-pwd-prompt');
+        if (existing) existing.remove();
+
+        const promptBox = document.createElement('div');
+        promptBox.id = 'inline-pwd-prompt';
+        promptBox.className = 'pwd-prompt';
+        promptBox.style.position = 'fixed';
+        promptBox.style.top = '50%';
+        promptBox.style.left = '50%';
+        promptBox.style.transform = 'translate(-50%, -50%)';
+        promptBox.style.zIndex = '9999';
+        promptBox.style.minWidth = '340px';
+        promptBox.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+        promptBox.innerHTML = `
+            <div style="color:#fca5a5; font-weight:bold; margin-bottom:6px;">🔒 CRITICAL INFRASTRUCTURE PROTECTION</div>
+            <div style="font-size:0.85rem; color:#94a3b8; margin-bottom:4px;">Enter the Master Management Passphrase to authorize deletion of route <strong style="color:#38bdf8;">[${routeName}]</strong> in <strong>[${companyName}]</strong>:</div>
+            <input type="password" id="destructive_pwd" placeholder="Management passphrase" autocomplete="off">
+            <div style="margin-top:8px;">
+                <button type="button" class="go" id="destructive_go">Authorize Deletion</button>
+                <button type="button" class="cancel" id="destructive_cancel">Cancel</button>
+            </div>
+        `;
+        document.body.appendChild(promptBox);
+        document.getElementById('destructive_pwd').focus();
+
+        document.getElementById('destructive_cancel').onclick = () => promptBox.remove();
+        document.getElementById('destructive_go').onclick = () => {
+            const pwd = document.getElementById('destructive_pwd').value;
+            if (!pwd) { alert('Passphrase cannot be empty.'); return; }
+            const hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = 'verify_password';
+            hidden.value = pwd;
+            form.appendChild(hidden);
+            promptBox.remove();
+            form.submit();
+        };
+        document.getElementById('destructive_pwd').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') document.getElementById('destructive_go').click();
+            if (e.key === 'Escape') promptBox.remove();
+        });
+    }
+    </script>
+</body>
+</html>

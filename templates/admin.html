@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Hub</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #0f172a; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .hub-card { background: #1e293b; padding: 30px; border-radius: 16px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 1px solid #334155; }
+        h1 { font-size: 1.5rem; margin-bottom: 25px; color: #38bdf8; }
+        .hub-btn { display: block; background: #2563eb; color: white; text-decoration: none; padding: 14px; margin-bottom: 12px; border-radius: 8px; font-weight: bold; font-size: 1rem; transition: 0.2s; }
+        .hub-btn:hover { background: #1d4ed8; transform: translateY(-2px); }
+        .logout { background: #475569; } .logout:hover { background: #334155; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; box-sizing: border-box; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px; }
+    </style>
+</head>
+<body>
+    <div class="hub-card">
+        {% if not logged_in %}
+            <h1>System Management Portal</h1>
+            {% with msgs = get_flashed_messages() %} {% if msgs %}<p style="color:#f87171;">{{msgs[0]}}</p>{% endif %} {% endwith %}
+            <form method="POST">
+                <input type="text" name="username" placeholder="Admin Username" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <button type="submit" class="hub-btn" style="width:100%; border:none;">Log In</button>
+            </form>
+        {% else %}
+            <h1>Admin Command Center</h1>
+            <a href="/admin/add_route" class="hub-btn">➕ Form A: Add Route</a>
+            <a href="/admin/add_vehicle" class="hub-btn">🚗 Form B: Enroll Vehicle</a>
+            <a href="/admin/edit_entities" class="hub-btn" style="background: #10b981;">📝 Edit Fleet & Financials</a>
+            <a href="/admin/edit_routes" class="hub-btn" style="background: #0ea5e9;">🗺️ Edit Master Routes</a>
+            <a href="/admin/reports" class="hub-btn" style="background: #eab308; color: black;">Report</a>
+            <a href="/admin/analytics" class="hub-btn" style="background: #a855f7;">📊 Intelligent Search & Analytics</a>
+            <a href="/admin/view_routes" class="hub-btn" style="background:#0284c7;">🗺️ View All System Routes</a>
+            <a href="/admin/daily_update" class="hub-btn" style="background:#0284c7; font-size:1.05rem; box-shadow: 0 4px 6px -1px rgba(2,132,199,0.4);">
+            📅 Open Daily Updates & Transaction Terminal
+            </a>
+            <a href="/admin/logout" class="hub-btn logout">Exit Terminal</a>
+        {% endif %}
+    </div>
+</body>
+</html>

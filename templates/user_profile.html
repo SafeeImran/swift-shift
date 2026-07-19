@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Captain Operations Master Dossier</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #0b0f19; color: #f3f4f6; margin: 0; padding: 25px; }
+        .box { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+        .back-nav { display: inline-flex; background: #1f2937; color: white; text-decoration: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; width: fit-content; border: 1px solid #374151; }
+        .grid-split { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .panel { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 20px; }
+        h2 { margin-top: 0; color: #a855f7; font-size: 1.3rem; border-bottom: 2px solid #1f2937; padding-bottom: 8px; }
+        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1f2937; font-size: 0.95rem; }
+        .info-row:last-child { border: none; }
+        .label { color: #9ca3af; } .val { font-weight: bold; }
+        .highlight { color: #10b981; font-size: 1.1rem; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
+        th { background: #1f2937; color: #9ca3af; padding: 12px; font-weight: bold; text-align: left; }
+        td { padding: 12px; border-bottom: 1px solid #1f2937; }
+        tr:hover { background: #1e293b; }
+        .badge-log { padding: 3px 6px; border-radius: 4px; font-weight: bold; font-size: 0.75rem; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <a href="/admin/analytics" class="back-nav">← Back to Intelligent Search Matrix</a>
+
+    <div class="grid-split">
+        <div class="panel">
+            <h2>🚗 Profile Data: {{ data.profile.registration_no }}</h2>
+            <div class="info-row"><span class="label">Captain Full Name:</span><span class="val">{{ data.profile.captain_name }}</span></div>
+            <div class="info-row"><span class="label">Corporate Assignment:</span><span class="val" style="color:#2563eb;">{{ data.company }}</span></div>
+            <div class="info-row"><span class="label">Unique Fleet Identifier Code:</span><span class="val" style="color:#a855f7;">{{ data.profile.driver_code }}</span></div>
+            <div class="info-row"><span class="label">Contact Primary (1):</span><span class="val">{{ data.profile.contact1 }}</span></div>
+            <div class="info-row"><span class="label">Contact Secondary (2):</span><span class="val">{{ data.profile.contact2 if data.profile.contact2 else 'None' }}</span></div>
+            <div class="info-row"><span class="label">Assigned Route Framework:</span><span class="val" style="color:#38bdf8;">{{ data.profile.route_name }}</span></div>
+            <div class="info-row"><span class="label">Vehicle Configuration Model:</span><span class="val">{{ data.profile.car_model }}</span></div>
+            <div class="info-row"><span class="label">Air Conditioning (AC) Status:</span><span class="val">{{ data.profile.ac_status }}</span></div>
+            <div class="info-row"><span class="label">Current System Duty Status:</span><span class="val">{{ data.profile.day_off_reason if data.profile.day_off_reason else 'Active Duty' }}</span></div>
+        </div>
+
+        <div class="panel" style="border-color: #10b981;">
+            <h2>💰 Financial Statement Modeling Logs</h2>
+            <div class="info-row"><span class="label">Base Fixed Route Rental Payout:</span><span class="val">Rs. {{ data.rental }}</span></div>
+            <div class="info-row"><span class="label">Operational Distance Calculations:</span><span class="val">{{ data.kms }} KM</span></div>
+            <div class="info-row"><span class="label">Target Scheduled Working Days:</span><span class="val">{{ data.working_days }} Days</span></div>
+            <div class="info-row"><span class="label">Target Projected Monthly Fuel Volume:</span><span class="val">{{ data.monthly_litre }} Ltr</span></div>
+            <div class="info-row"><span class="label">Allocated Target Fuel Worth:</span><span class="val">Rs. {{ data.monthly_fuel_amount }}</span></div>
+            <div class="info-row" style="color:#ef4444;"><span class="label">Accumulated Cumulative Backup Fines:</span><span class="val">Rs. {{ data.profile.backup_total }}</span></div>
+            <div class="info-row" style="color:#38bdf8;"><span class="label">Total Actual Drawn Fuel Volume Logged:</span><span class="val">{{ data.profile.actual_fuel_taken }} Ltrs</span></div>
+            <div class="info-row"><span class="label">Fuel Variance Difference Margin:</span><span class="val">{{ data.fuel_diff }} Ltr</span></div>
+            <div class="info-row"><span class="label">Fuel Variance Cost Penalty:</span><span class="val">Rs. {{ data.fuel_diff_amount }}</span></div>
+            <div class="info-row" style="color:#eab308;"><span class="label">Unsettled Cash Advance Request Balance:</span><span class="val">Rs. {{ data.profile.advance_amount }}</span></div>
+            <div class="info-row" style="background: rgba(16, 185, 129, 0.1); padding: 10px; border-radius: 6px; margin-top: 5px;">
+                <span class="label" style="color:white; font-weight:bold;">Net Payable Balance Settlement Due:</span>
+                <span class="val highlight">Rs. {{ data.captain_payment }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2 style="color:#38bdf8;">📜 Complete Historical Action Audit Logs Receipt Records</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp Record</th>
+                    <th>Action Type Category</th>
+                    <th>Fuel Log (Ltr)</th>
+                    <th>Backup Cost (Rs)</th>
+                    <th>Advance Cost (Rs)</th>
+                    <th>Transaction Description Manifest Summary</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td><code>{{ log.timestamp }}</code></td>
+                    <td>
+                        {% if log.entry_type == 'Daily Update' %}
+                            <span class="badge-log" style="background:#0284c7;">Daily Update</span>
+                        {% elif log.entry_type == 'Advance Request' %}
+                            <span class="badge-log" style="background:#eab308; color:black;">Advance</span>
+                        {% else %}
+                            <span class="badge-log" style="background:#4b5563;">Status Change</span>
+                        {% endif %}
+                    </td>
+                    <td style="color:#38bdf8; font-weight:bold;">{{ '+' if log.fuel_added > 0 else '' }}{{ log.fuel_added if log.fuel_added > 0 else '-' }}</td>
+                    <td style="color:#eab308; font-weight:bold;">{{ '+' if log.backup_added > 0 else '' }}{{ 'Rs. ' ~ log.backup_added if log.backup_added > 0 else '-' }}</td>
+                    <td style="color:#ef4444; font-weight:bold;">{{ '+' if log.advance_added > 0 else '' }}{{ 'Rs. ' ~ log.advance_added if log.advance_added > 0 else '-' }}</td>
+                    <td style="color:#9ca3af;">{{ log.description }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" style="text-align:center; padding:20px; color:#64748b;">No individual operation history receipt logs discovered for this active driver record profile.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

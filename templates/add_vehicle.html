@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vehicle Enrollment Hub</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #0f172a; color: white; padding: 20px; display: flex; justify-content: center; }
+        .form-card { background: #1e293b; padding: 24px; border-radius: 12px; width: 100%; max-width: 500px; border: 1px solid #334155; }
+        h2 { color: #38bdf8; text-align: center; margin-top: 0; }
+        label { display: block; margin-top: 12px; font-weight: bold; color: #94a3b8; font-size: 0.85rem; }
+        input, select { width: 100%; padding: 11px; margin-top: 4px; box-sizing: border-box; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px; font-size: 0.95rem; }
+        button { background: #2563eb; color: white; font-weight: bold; border: none; padding: 12px; width: 100%; border-radius: 6px; margin-top: 20px; cursor: pointer; }
+        .msg-error { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #f87171; padding: 10px; border-radius: 6px; font-size: 0.9rem; text-align: center; }
+        .msg-success { background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; padding: 10px; border-radius: 6px; font-size: 0.9rem; text-align: center; }
+    </style>
+    <script>
+        // INTERACTIVE TWO-STEP DIALOGUE SELECTION LOGIC
+        async function loadCompanyRoutes(companyName) {
+            const routeSelect = document.getElementById('route_assigned');
+            const routeWrapper = document.getElementById('route_dialogue_wrapper');
+            
+            if (!companyName) {
+                routeWrapper.style.display = 'none';
+                routeSelect.innerHTML = '<option value="">-- Choose Company First --</option>';
+                return;
+            }
+
+            // Fetch contextual partitions securely over our api bridge
+            const response = await fetch('/api/get_routes/' + encodeURIComponent(companyName));
+            const routes = await response.json();
+
+            routeSelect.innerHTML = '<option value="">-- Now Select Route Dialogue --</option>';
+            if (routes.length === 0) {
+                routeSelect.innerHTML += '<option value="">⚠️ No Routes Found in this Company DB</option>';
+            } else {
+                routes.forEach(route => {
+                    routeSelect.innerHTML += `<option value="${route}">${route}</option>`;
+                });
+            }
+            routeWrapper.style.display = 'block';
+        }
+    </script>
+</head>
+<body>
+    <div class="form-card">
+        <h2>B) Vehicle Addition Terminal</h2>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, msg in messages %}
+                    <div class="msg-{{ 'success' if category == 'success' else 'error' }}">{{ msg }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" enctype="multipart/form-data" style="margin-top:15px;">
+            <label>1. Target Company Dialogue:</label>
+            <select name="company_select" required onchange="loadCompanyRoutes(this.value)">
+                <option value="">-- Select Company Entity --</option>
+                {% for c in companies %} <option value="{{ c }}">{{ c }}</option> {% endfor %}
+            </select>
+
+            <div id="route_dialogue_wrapper" style="display:none; transition: 0.2s;">
+                <label>2. Associated Operational Route Dialogue:</label>
+                <select id="route_assigned" name="route_assigned" required>
+                    <option value="">-- Choose Company First --</option>
+                </select>
+            </div>
+
+            <label>Registration Number (Unique Login ID):</label>
+            <input type="text" name="registration_no" required placeholder="e.g., CZ-6153">
+            
+            <label>Driver Portal Password:</label>
+            <input type="text" name="password" required>
+            
+            <label>Captain Full Name:</label>
+            <input type="text" name="captain_name" required>
+            
+            <label>Contact Phone Number 1 (Must be 11 Digits):</label>
+            <input type="text" name="contact1" required placeholder="e.g., 03001234567" maxlength="11">
+            
+            <label>Contact Phone Number 2 (Optional - 11 Digits):</label>
+            <input type="text" name="contact2" placeholder="e.g., 03151234567" maxlength="11">
+            
+            <label>Car Model Profile:</label>
+            <select name="car_model">
+                <option value="Karvaan">Karvaan</option>
+                <option value="Hijet">Hijet</option>
+                <option value="Car">Car</option>
+            </select>
+
+            <label>Air Conditioning (A/C):</label>
+            <select name="ac_status">
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+
+            <label>CNIC Copy (Front Pic):</label><input type="file" name="cnic_front" accept="image/*">
+            <label>CNIC Copy (Back Pic):</label><input type="file" name="cnic_back" accept="image/*">
+            <label>License Copy (Front Pic):</label><input type="file" name="license_front" accept="image/*">
+            <label>License Copy (Back Pic):</label><input type="file" name="license_back" accept="image/*">
+
+            <button type="submit">Enroll Assets</button>
+        </form>
+        <a href="/admin" style="display:block; text-align:center; margin-top:15px; color:#94a3b8; text-decoration:none; font-size:0.9rem;">← Return to Admin Hub</a>
+    </div>
+</body>
+</html>
