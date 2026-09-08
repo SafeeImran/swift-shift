@@ -171,7 +171,11 @@ def api_get_routes(company_name):
     return jsonify(routes)
 
 # --- CAPTAIN / USER INTERFACE ---
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
+def root():
+    return redirect(url_for('index'))
+
+@app.route('/user', methods=['GET', 'POST'])
 def index():
     if 'user' not in session:
         if request.method == 'POST':
